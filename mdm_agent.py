@@ -332,7 +332,7 @@ class Device:
             response = dict(Status="Idle", UDID=self.udid)
 
         #logMsg(_MODULE_ID, "body dict : %s " % response)
-        conn.request('PUT', _MDM_SERVER_PATH, body=writePlistToString(response), headers=dict(Cookie="__somecookie__=" + _TEST_SITE_NAME))
+        conn.request('PUT', _MDM_SERVER_PATH, body=writePlistToString(response), headers=dict(Cookie=_COOKIE_NAME + "=" + _COOKIE_VALUE))
         
         resp = conn.getresponse()
         data = resp.read()
