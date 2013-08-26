@@ -74,6 +74,15 @@ class DeviceManager(object):
     def __init__(self):
         pass
 
+    def _curs_for_db(self):
+        try:
+            db = sqlite3.connect(AGENT_DB_FILE)
+            curs = self.db.cursor()
+        except Exception, e:
+            return None
+        else:
+            return curs
+
     def _create_db(self):
         self.curs.execute("""
             CREATE TABLE IF NOT EXISTS devices (
@@ -107,6 +116,20 @@ class DeviceManager(object):
             logMsg(_MODULE_ID,LOG_INFO, "insert into error: %s" % e)
         else:
             self.db.commit()
+
+    def update_device_safe(self, dev):
+        if not isinstance(dev, Device):
+             return
+        try:
+            curs = self._curs_for_db()
+            if curs:
+                curs.execute("insert into devices values (NULL, '%s', '%s', '%s', '%s')" % (dev.udid, base64.encodestring(dev.token), dev.push_magic, dev.devid))
+
+        except sqlite3.OperationalError, e:
+            logMsg(_MODULE_ID,LOG_INFO, "insert into error: %s" % e)
+        else:
+            self.db.commit()
+
 
     def update_all_devices(self):
         for dev in self.devices:
