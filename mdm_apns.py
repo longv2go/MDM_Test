@@ -59,6 +59,12 @@ class ApnsRPCServer:
 
         ApnsManager().add_agent_for_udidpre(udid_prefix, agent)
 
+    def invalid_some_token(self, num):
+        pass
+
+    def update_some_token(self, num):
+        pass
+
 ###################
 # Tip: not use
 # #################
@@ -385,6 +391,23 @@ class APNSServer(Protocol):
         if offset == len(self.data):
             self.data = []
 
+#######################
+#APN Feedback Server
+#######################
+
+class APNFeedbackServer(Protocol):
+    """docstring for APNFeedbackServer"""
+    def __init__(self):
+        pass
+
+    def connectionMade(self):
+        print "apn feedback get a connect from " , self.transport.client
+        
+    def connectionLost(self, reason):
+        print "apn feedback lose a connect from " , self.transport.client
+
+    def dataReceived(self, data):
+        pass 
 
 if __name__ == '__main__':
     thread.start_new(start_xmlrpc, ())

@@ -93,7 +93,7 @@ class DeviceManager(object):
                 self.devices[row[1]] = Device(row[1], base64.decodestring(row[2]), row[3], row[0])
         else:
             self.devices = {}
-        logMsg(_MODULE_ID, LOG_DEBUG, "all devices %d" % len(self.devices))
+        #logMsg(_MODULE_ID, LOG_DEBUG, "all devices %d" % len(self.devices))
 
     def update_device(self, dev):
         if not isinstance(dev, Device):
