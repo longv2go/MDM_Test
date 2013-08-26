@@ -27,13 +27,7 @@ except Exception, e:
 
 _MODULE_ID = "__APNS__"
 
-# _AGENT_RPC_SERVER = '10.8.4.30'
-# _AGENT_RPC_PORT = 4343
-# _RPC_SERVER_PORT = 4342
-
-_APNS_PORT = 2096
-
-_agent_rpc_proxy = xmlrpclib.ServerProxy("http://%s:%d" % (AGENT_RPC_SERVER, AGENT_RPC_PORT))
+_APNS_PORT = APNS_PORT
 
 #xmlrpc functions called by mdm_agent
 #all functions xml rpc server suply are sync

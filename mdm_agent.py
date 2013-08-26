@@ -18,21 +18,23 @@ import traceback
 _MODULE_ID = "__AGENT__"
 
 # mdm server information
-_MDM_PORT = 10000
-#_MDM_HOST = '192.168.2.140'
-_MDM_HOST = '10.8.4.36'
-_MDM_CHECKIN_PATH = '/mdm/checkin'
-_MDM_SERVER_PATH = '/mdm/server'
+_MDM_PORT = MDM_SERVER_PORT
+_MDM_HOST = MDM_SERVER_HOST
+_MDM_CHECKIN_PATH = MDM_SERVER_PATH
+_MDM_SERVER_PATH = MDM_CHCEKIN_PATH
 
 _MDM_CHECKIN_URL = 'http://%s:%d%s' % (_MDM_HOST, _MDM_PORT, _MDM_CHECKIN_PATH)
 _MDM_SERVER_URL = 'http://%s:%d%s' % (_MDM_HOST, _MDM_PORT, _MDM_SERVER_PATH)
 _MDM_TOPIC = '<some topic>'
 
 
-_TEST_SITE_NAME = '<cookie>'
+_COOKIE_NAME = ''
+_COOKIE_VALUE = ''
 
 #notice that: the instance of ServerProxy should not shared between multithread
-_apns_rpc_proxy = xmlrpclib.ServerProxy("http://%s:%d" % (APNS_RPC_SERVER, APNS_RPC_PORT))
+def _rpc_proxy_for_apns():
+    apns_rpc_proxy = xmlrpclib.ServerProxy("http://%s:%d" % (APNS_RPC_SERVER, APNS_RPC_PORT))
+    return apns_rpc_proxy
 
 def _init_module():
     """ init the agent module to register to mdm_apns"""
@@ -231,7 +233,7 @@ class Device:
         apns server and would generate colume in database <udid -- token>"""
 
         #logMsg(_MODULE_ID, "register udid [%s] " % self.udid)
-        token64 = _apns_rpc_proxy.register(self.udid)
+        token64 = _rpc_proxy_for_apns().register(self.udid)
         self.token = base64.decodestring(token64)
 
     def unregister(self):
@@ -263,7 +265,7 @@ class Device:
             UnLockToken="unlock_token")
 
         conn = httplib.HTTPConnection(_MDM_HOST, _MDM_PORT)
-        conn.request('PUT',_MDM_CHECKIN_PATH, body=writePlistToString(tu), headers=dict(Cookie="__somecookie__=" + _TEST_SITE_NAME))
+        conn.request('PUT',_MDM_CHECKIN_PATH, body=writePlistToString(tu), headers=dict(Cookie=_COOKIE_NAME + "=" + _COOKIE_VALUE))
         #self._set_http_request(conn, _MDM_CHECKIN_PATH, tu)
         rep = conn.getresponse()
         rep.read()
@@ -273,7 +275,7 @@ class Device:
     def _set_http_request(self, conn, path, body_dict):
 
         try:
-            conn.request('PUT',path, body=writePlistToString(body_dict), headers=dict(Cookie="__somecookie__=" + _TEST_SITE_NAME))
+            conn.request('PUT',path, body=writePlistToString(body_dict), headers=dict(Cookie=_COOKIE_NAME + "=" + _COOKIE_VALUE))
         except Exception, e:
             logMsg(_MODULE_ID, LOG_WARING, "set_http_rquest error, %s" % e)
 
