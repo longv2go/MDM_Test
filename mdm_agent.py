@@ -28,8 +28,8 @@ _MDM_SERVER_URL = 'http://%s:%d%s' % (_MDM_HOST, _MDM_PORT, _MDM_SERVER_PATH)
 _MDM_TOPIC = '<some topic>'
 
 
-_COOKIE_NAME = ''
-_COOKIE_VALUE = ''
+_COOKIE_NAME = 'site_name'
+_COOKIE_VALUE = 'vs'
 
 #notice that: the instance of ServerProxy should not shared between multithread
 def _rpc_proxy_for_apns():
@@ -74,14 +74,15 @@ class DeviceManager(object):
     def __init__(self):
         pass
 
-    def _curs_for_db(self):
+    def _db_curs_for_device(self):
         try:
             db = sqlite3.connect(AGENT_DB_FILE)
-            curs = self.db.cursor()
+            curs = db.cursor()
         except Exception, e:
-            return None
+            logMsg(_MODULE_ID, LOG_INFO, "create db curs failed\n, %s" % traceback.format_exc())
+            return ()
         else:
-            return curs
+            return (db, curs)
 
     def _create_db(self):
         self.curs.execute("""
@@ -104,18 +105,21 @@ class DeviceManager(object):
             self.devices = {}
         #logMsg(_MODULE_ID, LOG_DEBUG, "all devices %d" % len(self.devices))
 
+    #thread safe
     def update_device(self, dev):
         if not isinstance(dev, Device):
              return
+
+        db, curs = self._db_curs_for_device();
         try:
             #if self.lock_curs.acquire():
-            self.curs.execute("insert into devices values (NULL, '%s', '%s', '%s', '%s')" % (dev.udid, base64.encodestring(dev.token), dev.push_magic, dev.devid))
+            curs.execute("insert into devices values (NULL, '%s', '%s', '%s', '%s')" % (dev.udid, base64.encodestring(dev.token), dev.push_magic, dev.devid))
              #   self.lock_curs.relese()
 
         except sqlite3.OperationalError, e:
             logMsg(_MODULE_ID,LOG_INFO, "insert into error: %s" % e)
         else:
-            self.db.commit()
+            db.commit()
 
     def update_device_safe(self, dev):
         if not isinstance(dev, Device):
@@ -540,7 +544,8 @@ class AgentRPCServer:
         return "Done"
 
     def new_device(self):
-        DeviceManager().new_device()
+        dm = DeviceManager()
+        thread.start_new(dm.new_device, ())
         return "Done"
 
     def test_mdm(self):

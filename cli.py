@@ -38,7 +38,7 @@ class CLI(cmd.Cmd):
             apns_rpc_proxy().invalid_some_token(int(num))
         except socket.error, e:
             print "the apns xmlrpc(%s:%d) not running" % (APNS_RPC_SERVER, APNS_RPC_PORT)
-            
+
     def help_feedback(self):
         print "syntax: feedback count -- invalide <count> devices token, and add them to feedback list"
 

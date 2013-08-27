@@ -1,8 +1,8 @@
 
 ######## Test flags ########
-AGENT_INIT_DEVICES_NUM = 0
+AGENT_INIT_DEVICES_NUM = 0 
 
-TEST_MDM = True #if this flag set true, the AGENT_INIT_DEVICES_NUM would be disabled
+TEST_MDM = False #if this flag set true, the AGENT_INIT_DEVICES_NUM would be disabled
 
 PERFORMANCE_TEST = False #not use
 MULTI_AGENTS = False #not use
@@ -19,6 +19,7 @@ APN_FEEDBACK_PORT = 2097
 
 ########## MDM server ###########
 MDM_SERVER_HOST = '10.8.4.36'
+#MDM_SERVER_HOST = '10.8.10.95'
 MDM_SERVER_PORT =  10000
 
 MDM_SERVER_PATH = '/mdm/server'
