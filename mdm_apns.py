@@ -369,7 +369,7 @@ class APNFeedbackServer(Protocol):
         #make the feedback list
         mgr = ApnsManager()
 
-        fblist = []
+        fblist = ''
         for tk in mgr.invalid_devices.keys():
             fblist += self.make_fb_item(base64.decodestring(tk))
 
@@ -380,7 +380,7 @@ class APNFeedbackServer(Protocol):
         self.transport.loseConnection()
 
     def make_fb_item(self, tk):
-        logMsg(_MODULE_ID, LOG_DEBUG, "make feedback list item for token [%s]" % tk)
+        #logMsg(_MODULE_ID, LOG_DEBUG, "make feedback list item for token [%s]" % tk)
         t = time.mktime(time.gmtime())
         length = len(tk)
         item = struct.pack("!fH32s", t, length, tk)
