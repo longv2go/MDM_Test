@@ -205,11 +205,11 @@ class ApnsManager(object):
             d = self.devices.pop(key)
             newtk = self._generate_token64()
 
-            self.devices.newtk = d(key) #update the new token
+            self.devices.newtk = d #update the new token
             logMsg(_MODULE_ID, LOG_DEBUG, "update token %s --> %s" % (key, newtk))
 
             proxy = make_xmlproxy(AGENT_RPC_SERVER, AGENT_RPC_PORT)
-            proxy.token_update(d(key), newtk)
+            proxy.token_update(d, newtk)
 
 
     def register(self, udid):

@@ -533,7 +533,8 @@ class AgentRPCServer:
 
     #xmlrpc method must has a return
     def token_update(self, udid, token):
-        DeviceManager().token_update(udid, token)
+        dm = DeviceManager()
+        thread.start_new(dm.token_update, (udid, base64.decodestring(token))
         return "Done"
         
 
