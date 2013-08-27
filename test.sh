@@ -16,6 +16,7 @@ do_stop () {
         tmux send-keys -t $TMUX_SESSION:first.0 C-z
         tmux send-keys -t $TMUX_SESSION:first.2 C-c C-c
         tmux send-keys -t $TMUX_SESSION:first.1 C-c
+        tmux send-keys -t $TMUX_SESSION:first.3 C-c
 
         tmux detach-client
     fi
@@ -42,7 +43,7 @@ do_start() {
     tmux send-keys -t $TMUX_SESSION:first.0 "$P0_cmd" C-m
     tmux send-keys -t $TMUX_SESSION:first.2 "$P2_cmd" C-m
     tmux send-keys -t $TMUX_SESSION:first.1 "${P1_cmd}" C-m
-    tmux send-keys -t $TMUX_SESSION:first.3 "${P3_cmd}" C-m
+    
 
     tmux new-window -n clone -t $TMUX_SESSION
     tmux send-keys -t $TMUX_SESSION "cd ${CURRENT_DIR}" C-m
@@ -51,6 +52,7 @@ do_start() {
 
     tmux split-window -v -p 25 -t $TMUX_SESSION:first.1
     tmux send-keys -t $TMUX_SESSION "cd ${CURRENT_DIR}" C-m
+    tmux send-keys -t $TMUX_SESSION:first.3 "${P3_cmd}" C-m
 
     # tmux send-keys -t $TMUX_SESSION:first.3 "" C-m
 

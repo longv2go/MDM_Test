@@ -1,6 +1,6 @@
 
 ######## Test flags ########
-AGENT_INIT_DEVICES_NUM = 2000
+AGENT_INIT_DEVICES_NUM = 0
 
 TEST_MDM = True #if this flag set true, the AGENT_INIT_DEVICES_NUM would be disabled
 

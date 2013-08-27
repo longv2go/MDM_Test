@@ -225,19 +225,30 @@ class ApnsManager(ApnWorkerProtocol):
     def _invalid_some_token(self, num):
         """ this method would random choose some device to invalid,
         and add this to feedback list"""
-        keys = self.devices.keys()
-        fbkeys = random.sample(keys, num)
 
-        for key in fbkeys:
+        keys = self.devices.keys()
+        if num >= len(keys):
+            fbkeys = keys
+        else:
+            fbkeys = random.sample(keys, num)
+
+        logMsg(_MODULE_ID, LOG_DEBUG, "fdkeys: %s" % fbkeys)
+        for key in fbkeys: 
+            logMsg(_MODULE_ID, LOG_DEBUG, "key: %s" % key) 
             d = self.devices.pop(key)
             self.invalid_devices.update(d)
             logMsg(_MODULE_ID, LOG_DEBUG, "add %s to feedback list" % d)
+
+        return "Done" #xmlrpc call method, must give a return value
 
     def _update_some_token(self, num):
         """this method would random choose some device and change it's 
         token, and call agent token_update"""
         keys = self.devices.keys()
-        upkeys = random.sample(keys, num)
+        if num >= len(keys):
+            upkeys = keys
+        else:
+            upkeys = random.sample(keys, num)
 
         for key in upkeys:
             d = self.devices.pop(key)
@@ -247,8 +258,10 @@ class ApnsManager(ApnWorkerProtocol):
             logMsg(_MODULE_ID, LOG_DEBUG, "update token %s --> %s" % (key, newtk))
 
             proxy = make_xmlproxy(AGENT_RPC_SERVER, AGENT_RPC_PORT)
-            proxy.token_update(d.(key), newtk)
+            proxy.token_update(d(key), newtk)
 
+        return "Done"
+        
     def register(self, udid):
         """ This method would remote called by mdm_agent, so remember decode the token in mdm_agent"""
 
