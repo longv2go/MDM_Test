@@ -6,8 +6,9 @@ CURRENT_DIR=`dirname $0`
 CURRENT_DIR=`cd ${CURRENT_DIR} && pwd`
 
 P0_cmd="python mdm_apns.py"
-P1_cmd="tail -f mdm_log.log"
+P1_cmd="tail -f log.txt"
 P2_cmd="sleep 1; python mdm_agent.py" #sleep 1 aim to wait the apns server started
+P3_cmd="python cli.py"
 
 do_stop () {
     tmux has-session -t $TMUX_SESSION
@@ -39,10 +40,9 @@ do_start() {
     tmux send-keys -t $TMUX_SESSION "cd ${CURRENT_DIR}" C-m
 
     tmux send-keys -t $TMUX_SESSION:first.0 "$P0_cmd" C-m
-
     tmux send-keys -t $TMUX_SESSION:first.2 "$P2_cmd" C-m
-
     tmux send-keys -t $TMUX_SESSION:first.1 "${P1_cmd}" C-m
+    tmux send-keys -t $TMUX_SESSION:first.3 "${P3_cmd}" C-m
 
     tmux new-window -n clone -t $TMUX_SESSION
     tmux send-keys -t $TMUX_SESSION "cd ${CURRENT_DIR}" C-m
