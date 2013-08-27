@@ -19,6 +19,7 @@ from twisted.protocols.basic import LineReceiver
 import struct
 import base64
 import traceback
+from pprint import pprint
 
 try:
     from config import MULTI_AGENTS
@@ -60,10 +61,10 @@ class ApnsRPCServer:
         ApnsManager().add_agent_for_udidpre(udid_prefix, agent)
 
     def invalid_some_token(self, num):
-        pass
+        ApnsManager()._invalid_some_token(num)
 
     def update_some_token(self, num):
-        pass
+        ApnsManager()._update_some_token(num)
 
 ###################
 # Tip: not use
@@ -144,7 +145,7 @@ class ApnsManager(ApnWorkerProtocol):
 
     def _single_init(self):
         self.devices = {}
-        self.invalid_list = []
+        self.invalid_devices = {}
 
         #This value store the information about agents registed by mdm_agent, 
         #{"<udid_prefix>":<instance of class MdmAgent>}
@@ -222,15 +223,32 @@ class ApnsManager(ApnWorkerProtocol):
 
         self.db.commit()
 
-    def _invalid_some_token(self):
+    def _invalid_some_token(self, num):
         """ this method would random choose some device to invalid,
         and add this to feedback list"""
-        pass
+        keys = self.devices.keys()
+        fbkeys = random.sample(keys, num)
 
-    def _update_some_token(self):
+        for key in fbkeys:
+            d = self.devices.pop(key)
+            self.invalid_devices.update(d)
+            logMsg(_MODULE_ID, LOG_DEBUG, "add %s to feedback list" % d)
+
+    def _update_some_token(selfk, num):
         """this method would random choose some device and change it's 
         token, and call agent token_update"""
-        pass
+        keys = self.devices.keys()
+        upkeys = random.sample(keys, num)
+
+        for key in upkeys:
+            d = self.devices.pop(key)
+            newtk = _generate_token64()
+
+            self.devices.newtk = d(key) #update the new token
+            logMsg(_MODULE_ID, LOG_DEBUG, "update token %s --> %s" % (key, newtk))
+
+            proxy = make_xmlproxy(AGENT_RPC_SERVER, AGENT_RPC_PORT)
+            proxy.token_update(d.(key), newtk)
 
     def register(self, udid):
         """ This method would remote called by mdm_agent, so remember decode the token in mdm_agent"""
@@ -293,7 +311,8 @@ class ApnsManager(ApnWorkerProtocol):
         return worker
 
     def make_worker2(self):
-        proxy = xmlrpclib.ServerProxy("http://%s:%d" % (AGENT_RPC_SERVER, AGENT_RPC_PORT))
+        proxy = make_xmlproxy(AGENT_RPC_PORT, AGENT_RPC_PORT)
+
         def send_apn_worker(udid):
             logMsg(_MODULE_ID, LOG_INFO, "apns would send apn for udid [%s]\n" % udid)
             try:
@@ -303,6 +322,11 @@ class ApnsManager(ApnWorkerProtocol):
                 ApnsManager().remove_agent_for_udid(udid)
 
         return send_apn_worker
+
+#End class apns mananger
+#
+def make_xmlproxy(host, port):
+    return xmlrpclib.ServerProxy("http://%s:%d" % (host, prot))
 
 def send_apn_worker(udid):
     logMsg(_MODULE_ID, LOG_INFO, "apns would send apn for udid [%s]\n" % udid)
@@ -402,7 +426,23 @@ class APNFeedbackServer(Protocol):
 
     def connectionMade(self):
         print "apn feedback get a connect from " , self.transport.client
-        
+
+        #make the feedback list
+        fblist = []
+        for tk in ApnsManager().invalid_devices.keys():
+            fblist += self.make_fb_item(tk)
+
+
+        self.transport.write(fblist)
+        self.transport.loseConnection()
+
+    def make_fb_item(self, tk):
+        logMsg(_MODULE_ID, LOG_DEBUG, "make feedback list item for token [%s]" % tk)
+        t = time.matime(time.gmtime())
+        length = len(tk)
+        item = struct.pack("!fH32s", t, length, tk)
+        return item
+
     def connectionLost(self, reason):
         print "apn feedback lose a connect from " , self.transport.client
 
