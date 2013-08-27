@@ -76,65 +76,12 @@ class MdmAgent:
         self.host = host
         self.port = port
         self.prefix_len = len(udid_prefix)
-   
-        self.rpc_proxy = xmlrpclib.ServerProxy("http://%s:%d" % (host, port))
     
     def __str__(self):
         return "<MdmAgent> udid prefix: [%s], host[%s:%d]" % (self.udid_prefix, self.host, self.port)
 
-##################################################
-# Apn worker
-# ################################################
 
-class ApnWorkerProtocol(object):
-
-    def worker_dead(self):
-        pass
-
-class ApnSendWorker(object):
-
-    _ALIVE , _DEAD = range(2)
-    _status = _ALIVE
-
-    def __init__(self, delegate, host, port, id='W-0'):   
-        self.delegate = None
-        if isinstance(delegate, ApnWorkerProtocol):
-            self.delegate = delegate
-
-        try:
-            self.agent_proxy = xmlrpclib.ServerProxy("http://%s:%d" % (AGENT_RPC_SERVER, AGENT_RPC_PORT))
-            self.host = host
-            self.port = port
-            self.id = id
-            self._status = self._ALIVE
-
-        except Exception, e:
-            logMsg(_MODULE_ID, LOG_WARING, "create worker(%s) faild. wrong param" % self.id)
-            raise e
-        else:
-            logMsg(_MODULE_ID, LOG_DEBUG, "worke (%s) created" % self.id)
-
-    def send_apn(self, udid):
-        if self._status != self._ALIVE:
-            logMsg(_MODULE_ID, LOG_WARING, "worker (%s) already dead in thread(%s) " % (self.id, thread.get_ident()))
-            return
-        logMsg(_MODULE_ID, LOG_DEBUG, "Aha, I am worker(%s) , start working" % self.id)
-        try:
-            self.agent_proxy.receive_apn(udid)
-        except Exception, e:
-            logMsg(_MODULE_ID, LOG_WARING, "<xmlrpc> call agent receive_apn failed.\n %s " % traceback.format_exc())
-            self._worker_dead()
-
-    def _worker_dead(self):
-        logMsg(_MODULE_ID, LOG_WARING, "dead worker (%s) in thread(%s) " % (self.id, thread.get_ident()))
-        self._status = self._DEAD
-        if self.delegate is not None:
-                self.delegate.worker_dead(self)
-
-    def _do_send_apn(self, udid):
-        pass   
-
-class ApnsManager(ApnWorkerProtocol):
+class ApnsManager(object):
 
     def __new__(cls, *args, **kwargs):
 
@@ -234,7 +181,7 @@ class ApnsManager(ApnWorkerProtocol):
             fbkeys = keys
         else:
             fbkeys = random.sample(keys, num)
-            
+
         for key in fbkeys: 
             logMsg(_MODULE_ID, LOG_DEBUG, "key: %s" % key) 
             d = self.devices.pop(key)
@@ -305,38 +252,7 @@ class ApnsManager(ApnWorkerProtocol):
         self.worker_index = self.worker_index % len(self.workers)
         return self.workers[self.worker_index]
 
-    def worker_dead(self, worker):
-        logMsg(_MODULE_ID, LOG_DEBUG, "apn worker(%s) dead" % worker.id)
-        if worker in self.workers:
-            self.workers.remove(worker)
-            self.make_worker("%s+" % worker.id)
-
-    def make_worker(self, ident):
-        try:
-            worker = ApnSendWorker(self, AGENT_RPC_SERVER, AGENT_RPC_PORT, ident)
-            self.workers.append(worker)
-        except Exception, e:
-            logMsg(_MODULE_ID, LOG_WARING, "make_work error, %s" % traceback.format_exc())
-            raise
-
-        return worker
-
-    def make_worker2(self):
-        proxy = make_xmlproxy(AGENT_RPC_PORT, AGENT_RPC_PORT)
-
-        def send_apn_worker(udid):
-            logMsg(_MODULE_ID, LOG_INFO, "apns would send apn for udid [%s]\n" % udid)
-            try:
-                proxy.receive_apn(udid)
-            except Exception, e:
-                logMsg(_MODULE_ID, LOG_INFO, "<xmlrpc> call agent receive_apn failed.\n %s " % traceback.format_exc())
-                ApnsManager().remove_agent_for_udid(udid)
-
-        return send_apn_worker
-
 #End class apns mananger
-#
-
 
 def make_xmlproxy(host, port):
     return xmlrpclib.ServerProxy("http://%s:%d" % (host, port))
