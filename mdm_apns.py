@@ -92,6 +92,7 @@ class ApnsManager(object):
         return cls._inst
 
     def _single_init(self):
+        #the devices: base64toekn --> dev_UDID
         self.devices = {}
         self.invalid_devices = {} #device which is already invalid but not send to feedback list
         self.feedbacked_devices = {}  #which send to feedback list device
@@ -367,7 +368,7 @@ class APNFeedbackServer(Protocol):
 
         fblist = []
         for tk in mgr.invalid_devices.keys():
-            fblist += self.make_fb_item(tk)
+            fblist += self.make_fb_item(base64.decodestring(tk))
 
         mgr.feedbacked_devices.update(mgr.invalid_devices)
         mgr.invalid_devices = {}
