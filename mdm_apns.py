@@ -60,7 +60,10 @@ class ApnsRPCServer:
         return "Done"
 
     def invalid_some_token(self, num):
-        ApnsManager()._invalid_some_token(num)
+        try:
+            ApnsManager()._invalid_some_token(num)
+        except Exception, e:
+            logMsg(_MODULE_ID, LOG_WARING, "invalid token , %s" % traceback.format_exc())
         return "Done" #xmlrpc call method must give a return value
 
     def update_some_token(self, num):
@@ -186,8 +189,8 @@ class ApnsManager(object):
         for key in fbkeys: 
             logMsg(_MODULE_ID, LOG_DEBUG, "key: %s" % key) 
             d = self.devices.pop(key)
-            self.invalid_devices.update(d)
-            logMsg(_MODULE_ID, LOG_DEBUG, "add %s to feedback list" % d)
+            self.invalid_devices.update({key:d})
+            logMsg(_MODULE_ID, LOG_DEBUG, "add %s to feedback list" % {key:d})
 
     def _update_some_token(self, num):
         """this method would random choose some device and change it's 
@@ -282,7 +285,7 @@ def start_apns_server():
     fbfactory = Factory()
     fbfactory.protocol = APNFeedbackServer
 
-    reactor.listenSSL(APN_FEEDBACK_PORT, factory, ssl.DefaultOpenSSLContextFactory(
+    reactor.listenSSL(APN_FEEDBACK_PORT, fbfactory, ssl.DefaultOpenSSLContextFactory(
                 'apns.key', 'apns.crt'))
     reactor.run()
     

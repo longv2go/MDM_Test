@@ -20,8 +20,8 @@ _MODULE_ID = "__AGENT__"
 # mdm server information
 _MDM_PORT = MDM_SERVER_PORT
 _MDM_HOST = MDM_SERVER_HOST
-_MDM_CHECKIN_PATH = MDM_SERVER_PATH
-_MDM_SERVER_PATH = MDM_CHCEKIN_PATH
+_MDM_CHECKIN_PATH = MDM_CHCEKIN_PATH
+_MDM_SERVER_PATH = MDM_SERVER_PATH
 
 _MDM_CHECKIN_URL = 'http://%s:%d%s' % (_MDM_HOST, _MDM_PORT, _MDM_CHECKIN_PATH)
 _MDM_SERVER_URL = 'http://%s:%d%s' % (_MDM_HOST, _MDM_PORT, _MDM_SERVER_PATH)
@@ -29,7 +29,7 @@ _MDM_TOPIC = '<some topic>'
 
 
 _COOKIE_NAME = 'site_name'
-_COOKIE_VALUE = 'vs'
+_COOKIE_VALUE = 'wangxy'
 
 #notice that: the instance of ServerProxy should not shared between multithread
 def _rpc_proxy_for_apns():
