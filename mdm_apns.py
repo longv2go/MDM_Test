@@ -28,8 +28,6 @@ except Exception, e:
 
 _MODULE_ID = "__APNS__"
 
-_APNS_PORT = APNS_PORT
-
 #xmlrpc functions called by mdm_agent
 #all functions xml rpc server suply are sync
 class ApnsRPCServer:
@@ -234,7 +232,7 @@ class ApnsManager(ApnWorkerProtocol):
             self.invalid_devices.update(d)
             logMsg(_MODULE_ID, LOG_DEBUG, "add %s to feedback list" % d)
 
-    def _update_some_token(selfk, num):
+    def _update_some_token(self, num):
         """this method would random choose some device and change it's 
         token, and call agent token_update"""
         keys = self.devices.keys()
@@ -242,7 +240,7 @@ class ApnsManager(ApnWorkerProtocol):
 
         for key in upkeys:
             d = self.devices.pop(key)
-            newtk = _generate_token64()
+            newtk = self._generate_token64()
 
             self.devices.newtk = d(key) #update the new token
             logMsg(_MODULE_ID, LOG_DEBUG, "update token %s --> %s" % (key, newtk))
@@ -325,8 +323,10 @@ class ApnsManager(ApnWorkerProtocol):
 
 #End class apns mananger
 #
+
+
 def make_xmlproxy(host, port):
-    return xmlrpclib.ServerProxy("http://%s:%d" % (host, prot))
+    return xmlrpclib.ServerProxy("http://%s:%d" % (host, port))
 
 def send_apn_worker(udid):
     logMsg(_MODULE_ID, LOG_INFO, "apns would send apn for udid [%s]\n" % udid)
@@ -346,7 +346,13 @@ def start_apns_server():
     factory = Factory()
     factory.protocol = APNSServer
 
-    reactor.listenSSL(_APNS_PORT, factory, ssl.DefaultOpenSSLContextFactory(
+    reactor.listenSSL(APNS_PORT, factory, ssl.DefaultOpenSSLContextFactory(
+                'apns.key', 'apns.crt'))
+
+    fbfactory = Factory()
+    fbfactory.protocol = APNFeedbackServer
+
+    reactor.listenSSL(APN_FEEDBACK_PORT, factory, ssl.DefaultOpenSSLContextFactory(
                 'apns.key', 'apns.crt'))
     reactor.run()
     
@@ -438,7 +444,7 @@ class APNFeedbackServer(Protocol):
 
     def make_fb_item(self, tk):
         logMsg(_MODULE_ID, LOG_DEBUG, "make feedback list item for token [%s]" % tk)
-        t = time.matime(time.gmtime())
+        t = time.mktime(time.gmtime())
         length = len(tk)
         item = struct.pack("!fH32s", t, length, tk)
         return item
