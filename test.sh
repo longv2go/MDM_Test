@@ -23,7 +23,7 @@ do_stop () {
 }
 
 do_start() {
-    touch mdm_log.log
+    touch log.txt
     tmux has-session -t $TMUX_SESSION
     if [ $? = 0 ]; then
         tmux detach-client
