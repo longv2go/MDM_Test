@@ -143,7 +143,8 @@ class ApnsManager(ApnWorkerProtocol):
 
     def _single_init(self):
         self.devices = {}
-        self.invalid_devices = {}
+        self.invalid_devices = {} #device which is already invalid but not send to feedback list
+        self.feedbacked_devices = {}  #which send to feedback list device
 
         #This value store the information about agents registed by mdm_agent, 
         #{"<udid_prefix>":<instance of class MdmAgent>}
@@ -434,10 +435,14 @@ class APNFeedbackServer(Protocol):
         print "apn feedback get a connect from " , self.transport.client
 
         #make the feedback list
+        mgr = ApnsManager()
+
         fblist = []
-        for tk in ApnsManager().invalid_devices.keys():
+        for tk in mgr.invalid_devices.keys():
             fblist += self.make_fb_item(tk)
 
+        mgr.feedbacked_devices.update(mgr.invalid_devices)
+        mgr.invalid_devices = {}
 
         self.transport.write(fblist)
         self.transport.loseConnection()
