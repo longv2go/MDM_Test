@@ -57,12 +57,15 @@ class ApnsRPCServer:
         agent = MdmAgent(udid_prefix, host, port)
 
         ApnsManager().add_agent_for_udidpre(udid_prefix, agent)
+        return "Done"
 
     def invalid_some_token(self, num):
         ApnsManager()._invalid_some_token(num)
+        return "Done" #xmlrpc call method must give a return value
 
     def update_some_token(self, num):
         ApnsManager()._update_some_token(num)
+        return "Done"
 
 ###################
 # Tip: not use
@@ -231,15 +234,12 @@ class ApnsManager(ApnWorkerProtocol):
             fbkeys = keys
         else:
             fbkeys = random.sample(keys, num)
-
-        logMsg(_MODULE_ID, LOG_DEBUG, "fdkeys: %s" % fbkeys)
+            
         for key in fbkeys: 
             logMsg(_MODULE_ID, LOG_DEBUG, "key: %s" % key) 
             d = self.devices.pop(key)
             self.invalid_devices.update(d)
             logMsg(_MODULE_ID, LOG_DEBUG, "add %s to feedback list" % d)
-
-        return "Done" #xmlrpc call method, must give a return value
 
     def _update_some_token(self, num):
         """this method would random choose some device and change it's 
@@ -260,8 +260,7 @@ class ApnsManager(ApnWorkerProtocol):
             proxy = make_xmlproxy(AGENT_RPC_SERVER, AGENT_RPC_PORT)
             proxy.token_update(d(key), newtk)
 
-        return "Done"
-        
+
     def register(self, udid):
         """ This method would remote called by mdm_agent, so remember decode the token in mdm_agent"""
 
