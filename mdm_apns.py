@@ -19,6 +19,7 @@ from twisted.protocols.basic import LineReceiver
 import struct
 import base64
 import traceback
+import httplib
 from pprint import pprint
 
 try:
@@ -368,6 +369,7 @@ class APNFeedbackServer(Protocol):
 
         #make the feedback list
         mgr = ApnsManager()
+        logMsg(_MODULE_ID, LOG_DEBUG, "invalide devices : %d" % len(mgr.invalid_devices))
 
         fblist = ''
         for tk in mgr.invalid_devices.keys():
@@ -375,7 +377,9 @@ class APNFeedbackServer(Protocol):
 
         mgr.feedbacked_devices.update(mgr.invalid_devices)
         mgr.invalid_devices = {}
-
+        
+        #self.test_feedbacklistapi(fblist)
+        logMsg(_MODULE_ID, LOG_DEBUG, "apn feedback write data : %d" % len(fblist))
         self.transport.write(fblist)
         self.transport.loseConnection()
 
@@ -385,6 +389,13 @@ class APNFeedbackServer(Protocol):
         length = len(tk)
         item = struct.pack("!fH32s", t, length, tk)
         return item
+
+    def test_feedbacklistapi(self, data):
+        conn = httplib.HTTPConnection(MDM_SERVER_HOST, MDM_SERVER_PORT)
+        conn.request('PUT', '/mdm/feedbacklist', data, headers=dict(Cookie="site_name=wangxy"))
+
+        rep = conn.getresponse()
+        logMsg(_MODULE_ID, LOG_DEBUG, "feedback code: %d, response: %s" % (rep.status, rep.read()))
 
     def connectionLost(self, reason):
         print "apn feedback lose a connect from " , self.transport.client
