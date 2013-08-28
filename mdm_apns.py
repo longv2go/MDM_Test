@@ -390,15 +390,9 @@ class APNFeedbackServer(Protocol):
         item = struct.pack("!fH32s", t, length, tk)
         return item
 
-    def test_feedbacklistapi(self, data):
-        conn = httplib.HTTPConnection(MDM_SERVER_HOST, MDM_SERVER_PORT)
-        conn.request('PUT', '/mdm/feedbacklist', data, headers=dict(Cookie="site_name=wangxy"))
-
-        rep = conn.getresponse()
-        logMsg(_MODULE_ID, LOG_DEBUG, "feedback code: %d, response: %s" % (rep.status, rep.read()))
-
     def connectionLost(self, reason):
         print "apn feedback lose a connect from " , self.transport.client
+        logMsg(_MODULE_ID, LOG_DEBUG, "apn feedback lose a connect")
 
     def dataReceived(self, data):
         pass 
