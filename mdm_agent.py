@@ -17,6 +17,10 @@ import traceback
 
 _MODULE_ID = "__AGENT__"
 
+#check the run mode
+if RUN_MODE == MODE_APNS:
+    exit()
+    
 # mdm server information
 _MDM_PORT = MDM_SERVER_PORT
 _MDM_HOST = MDM_SERVER_HOST
@@ -120,6 +124,8 @@ class DeviceManager(object):
             logMsg(_MODULE_ID,LOG_INFO, "insert into error: %s" % e)
         else:
             db.commit()
+        finally:
+            db.close()
 
     def update_device_safe(self, dev):
         if not isinstance(dev, Device):

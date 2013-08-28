@@ -29,6 +29,10 @@ except Exception, e:
 
 _MODULE_ID = "__APNS__"
 
+#check the run mode
+if RUN_MODE == MODE_AGENT:
+    exit()
+
 #xmlrpc functions called by mdm_agent
 #all functions xml rpc server suply are sync
 class ApnsRPCServer:
