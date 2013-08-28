@@ -31,6 +31,7 @@ _MODULE_ID = "__APNS__"
 
 #check the run mode
 if RUN_MODE == MODE_AGENT:
+    logMsg(_MODULE_ID, LOG_INFO, "run mode: AGENT, so apns exit")
     exit()
 
 #xmlrpc functions called by mdm_agent
@@ -72,7 +73,10 @@ class ApnsRPCServer:
         return "Done" #xmlrpc call method must give a return value
 
     def update_some_token(self, num):
-        ApnsManager()._update_some_token(num)
+        try:
+            ApnsManager()._update_some_token(num)
+        except Exception, e:
+            logMsg(_MODULE_ID, LOG_DEBUG, "run update_some_token exc, %s" % traceback.format_exc())
         return "Done"
 
 ###################
@@ -210,7 +214,7 @@ class ApnsManager(object):
             d = self.devices.pop(key)
             newtk = self._generate_token64()
 
-            self.devices.newtk = d #update the new token
+            self.devices[newtk] = d #update the new token
             logMsg(_MODULE_ID, LOG_DEBUG, "update token %s --> %s" % (key, newtk))
 
             proxy = make_xmlproxy(AGENT_RPC_SERVER, AGENT_RPC_PORT)

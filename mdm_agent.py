@@ -19,8 +19,9 @@ _MODULE_ID = "__AGENT__"
 
 #check the run mode
 if RUN_MODE == MODE_APNS:
+    logMsg(_MODULE_ID, LOG_INFO, "run mode: APNS, so agent exit")
     exit()
-    
+
 # mdm server information
 _MDM_PORT = MDM_SERVER_PORT
 _MDM_HOST = MDM_SERVER_HOST
