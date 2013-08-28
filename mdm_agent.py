@@ -41,9 +41,6 @@ def _rpc_proxy_for_apns():
     apns_rpc_proxy = xmlrpclib.ServerProxy("http://%s:%d" % (APNS_RPC_SERVER, APNS_RPC_PORT))
     return apns_rpc_proxy
 
-def _init_module():
-    """ init the agent module to register to mdm_apns"""
-    pass
 
 class DeviceManager(object):
 
